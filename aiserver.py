@@ -1785,17 +1785,18 @@ def api_generate():
         try:
             request_json = request.get_json(force=True)
             txt = request_json["input"]
+
             params = request_json["parameters"]
 
-            min_length = params["min_length"]
-            max_length = params["max_length"]
-            temp = params["temperature"]
-            rep_pen = params["repetition_penalty"]
-            rep_pen_range = params["repetition_penalty_range"]
-            rep_pen_slope = params["repetition_penalty_slope"]
-            top_p = params["top_p"]
-            top_k = params["top_k"]
-            tfs = params["tail_free_sampling"]
+            min_length = params["min_length"] if "min_length" in params else 1
+            max_length = params["max_length"] if "max_length" in params else 40
+            temp = params["temperature"] if "temperature" in params else 1
+            rep_pen = params["repetition_penalty"] if "repetition_penalty" in params else 1
+            rep_pen_range = params["repetition_penalty_range"] if "repetition_penalty_range" in params else 2048
+            rep_pen_slope = params["repetition_penalty_slope"] if "repetition_penalty_slope" in params else 0
+            top_p = params["top_p"] if "top_p" in params else 1
+            top_k = params["top_k"] if "top_k" in params else 0
+            tfs = params["tail_free_sampling"] if "tail_free_sampling" in params else 1
             eos_token_id = params["eos_token_id"] if "eos_token_id" in params else None
             eos_token_search_batch_size = params[
                 "eos_token_search_batch_size"] if "eos_token_search_batch_size" in params else None
