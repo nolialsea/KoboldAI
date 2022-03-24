@@ -1802,7 +1802,7 @@ def api_generate():
                 "eos_token_search_batch_size"] if "eos_token_search_batch_size" in params else None
 
             # TODO: set max_length to the proper value
-            txt_tokens = tokenizer.encode(txt, max_length=int(2e11) - (maximum - minimum + 1), truncation=True)
+            txt_tokens = tokenizer.encode(txt, max_length=int(2e11) - (max_length - min_length + 1), truncation=True)
             output = api_tpumtjgenerate(txt_tokens, min_length, max_length, temp, top_p, top_k, tfs, rep_pen,
                                         rep_pen_slope, rep_pen_range, eos_token_id, eos_token_search_batch_size)
 
