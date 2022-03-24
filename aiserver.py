@@ -1854,13 +1854,14 @@ def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, 
                 eos_token_search_batch_size = gen_len
             string_result = ''
             for _ in range(int(gen_len // eos_token_search_batch_size)):
-                genout = tpool_execute(txt + string_result, eos_token_search_batch_size, temp, top_p, top_k, tfs,
+                genout = tpool_execute(txt, eos_token_search_batch_size, temp, top_p, top_k, tfs,
                                        rep_pen, rep_pen_slope, rep_pen_range)
                 if eos_token_id in genout[0]:
                     genout[0] = genout[0][:genout[0].index(eos_token_id) + 1]
                     string_result += tokenizer.decode(genout[0])
                     break
                 else:
+                    txt = txt + genout[0]
                     string_result += tokenizer.decode(genout[0])
         else:
             genout = tpool.execute(
