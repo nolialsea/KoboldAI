@@ -1796,17 +1796,22 @@ def api_generate():
             tfs = params["tail_free_sampling"]
 
             print("Received Data: {0}".format(txt))
-            print("Generating text, please wait...")
 
+            print("Encoding text into tokens...")
             txt_tokens = tokenizer.encode(txt, max_length=int(2e11), truncation=True)
+
+            print("Generating text, please wait...")
             output = api_tpumtjgenerate(txt_tokens, min_length, max_length, temp, top_p, top_k, tfs, rep_pen,
                                         rep_pen_slope, rep_pen_range)
 
+            print("Generation finished!")
             response = app.response_class(
                 response=json.dumps({"data": {"output": output}}),
                 status=200,
                 mimetype='application/json'
             )
+
+            print("Response ready to be sent!")
             return response
 
         except Exception as exception:
@@ -1823,7 +1828,7 @@ def api_generate():
 
 
 def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope, rep_pen_range):
-    vars.generated_tkns = 0
+    print("Entered api_tpumtjgenerate...")
     numseqs = 1
 
     if not vars.quiet:
