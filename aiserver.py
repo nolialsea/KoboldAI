@@ -1798,7 +1798,7 @@ def api_generate():
             tfs = params["tail_free_sampling"]
             eos_token_id = params["eos_token_id"] if "eos_token_id" in params else None
             eos_token_search_batch_size = params[
-                "eos_token_search_batch_size"] if "eos_token_search_batch_size" in params else 20
+                "eos_token_search_batch_size"] if "eos_token_search_batch_size" in params else None
 
             txt_tokens = tokenizer.encode(txt, max_length=int(2e11), truncation=True)
             output = api_tpumtjgenerate(txt_tokens, min_length, max_length, temp, top_p, top_k, tfs, rep_pen,
@@ -1843,15 +1843,18 @@ def tpool_execute(txt, gen_len, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope,
 
 
 def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope, rep_pen_range,
-                       eos_token_id=None, eos_token_search_batch_size=20):
+                       eos_token_id=None, eos_token_search_batch_size=None):
     string_result = None
     gen_len = maximum - minimum + 1
     # Submit input text to generator
     try:
         if eos_token_id is not None:
+            if eos_token_search_batch_size is None:
+                eos_token_search_batch_size = gen_len
             string_result = ''
             for _ in range(int(gen_len // eos_token_search_batch_size)):
-                genout = tpool_execute(txt+string_result, eos_token_search_batch_size, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope, rep_pen_range)
+                genout = tpool_execute(txt + string_result, eos_token_search_batch_size, temp, top_p, top_k, tfs,
+                                       rep_pen, rep_pen_slope, rep_pen_range)
                 if eos_token_id in genout[0]:
                     genout[0] = genout[0][:genout[0].index(eos_token_id) + 1]
                     string_result += tokenizer.decode(genout[0])
