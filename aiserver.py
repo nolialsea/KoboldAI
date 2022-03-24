@@ -1780,10 +1780,10 @@ def index():
 def api_generate():
     if request.method == 'POST':
         try:
-            js = request.json
-
-            txt = js["input"]
-            params = js["parameters"]
+            request_json = request.get_json(force=True)
+            print(request_json)
+            txt = request_json["input"]
+            params = request_json["parameters"]
 
             min_length = params["min_length"]
             max_length = params["max_length"]
@@ -1799,8 +1799,8 @@ def api_generate():
             print("Generating text, please wait...")
 
             txt_tokens = tokenizer.encode(txt, max_length=int(2e11), truncation=True)
-            output = api_tpumtjgenerate(txt_tokens, min_length, max_length, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope,
-                                        rep_pen_range)
+            output = api_tpumtjgenerate(txt_tokens, min_length, max_length, temp, top_p, top_k, tfs, rep_pen,
+                                        rep_pen_slope, rep_pen_range)
 
             response = app.response_class(
                 response=json.dumps({"data": {"output": output}}),
