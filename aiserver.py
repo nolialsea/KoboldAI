@@ -1831,12 +1831,12 @@ def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, 
     print("Entered api_tpumtjgenerate...")
     numseqs = 1
 
-    if not vars.quiet:
-        print("{0}Min:{1}, Max:{2}, Txt:{3}{4}".format(colors.YELLOW, minimum, maximum,
-                                                       utils.decodenewlines(tokenizer.decode(txt)), colors.END))
+    print("{0}Min:{1}, Max:{2}, Txt:{3}{4}".format(colors.YELLOW, minimum, maximum,
+                                                   utils.decodenewlines(tokenizer.decode(txt)), colors.END))
 
     # Submit input text to generator
     try:
+        print("Executing tpool...")
         genout = tpool.execute(
             tpu_mtj_backend.infer_static,
             np.uint32(txt),
@@ -1852,12 +1852,16 @@ def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, 
             soft_embeddings=vars.sp,
             soft_tokens=None,
         )
-    except Exception as e:
-        if issubclass(type(e), lupa.LuaError):
+        print("tpool excecution successful!")
+
+    except Exception as exception:
+        print("An error occured...")
+        print(exception)
+        if issubclass(type(exception), lupa.LuaError):
             vars.lua_koboldbridge.obliterate_multiverse()
             vars.lua_running = False
             print("{0}{1}{2}".format(colors.RED, "***LUA ERROR***: ", colors.END), end="", file=sys.stderr)
-            print("{0}{1}{2}".format(colors.RED, str(e).replace("\033", ""), colors.END), file=sys.stderr)
+            print("{0}{1}{2}".format(colors.RED, str(exception).replace("\033", ""), colors.END), file=sys.stderr)
             print("{0}{1}{2}".format(colors.YELLOW,
                                      "Lua engine stopped; please open 'Userscripts' and press Load to reinitialize scripts.",
                                      colors.END), file=sys.stderr)
