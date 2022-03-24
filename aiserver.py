@@ -1781,9 +1781,12 @@ def api_generate():
     if request.method == 'POST':
         try:
             js = request.json
+            print(js)
 
             txt = js["input"]
+            print(txt)
             params = js["parameters"]
+            print(params)
 
             min_length = params["min_length"]
             max_length = params["max_length"]
