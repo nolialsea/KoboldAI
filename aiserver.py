@@ -1796,11 +1796,13 @@ def api_generate():
             top_p = params["top_p"]
             top_k = params["top_k"]
             tfs = params["tail_free_sampling"]
+            eos_token_id = params["eos_token_id"] if "eos_token_id" in params else None
+            eos_token_search_batch_size = params[
+                "eos_token_search_batch_size"] if "eos_token_search_batch_size" in params else 20
 
             txt_tokens = tokenizer.encode(txt, max_length=int(2e11), truncation=True)
-
             output = api_tpumtjgenerate(txt_tokens, min_length, max_length, temp, top_p, top_k, tfs, rep_pen,
-                                        rep_pen_slope, rep_pen_range)
+                                        rep_pen_slope, rep_pen_range, eos_token_id, eos_token_search_batch_size)
 
             response = app.response_class(
                 response=json.dumps({"output": output}),
@@ -1822,26 +1824,50 @@ def api_generate():
         return response
 
 
-def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope, rep_pen_range):
-    numseqs = 1
-
+def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope, rep_pen_range,
+                       eos_token_id=None, eos_token_search_batch_size=20):
+    string_result = None
+    gen_len = maximum - minimum + 1
     # Submit input text to generator
     try:
-        genout = tpool.execute(
-            tpu_mtj_backend.infer_static,
-            np.uint32(txt),
-            gen_len=maximum - minimum + 1,
-            temp=temp,
-            top_p=top_p,
-            top_k=top_k,
-            tfs=tfs,
-            numseqs=numseqs,
-            repetition_penalty=rep_pen,
-            rpslope=rep_pen_slope,
-            rprange=rep_pen_range,
-            soft_embeddings=vars.sp,
-            soft_tokens=None,
-        )
+        if eos_token_id is not None:
+            string_result = ''
+            for _ in range(int(gen_len // eos_token_search_batch_size)):
+                genout = tpool.execute(
+                    tpu_mtj_backend.infer_static,
+                    np.uint32(txt),
+                    gen_len=gen_len,
+                    temp=temp,
+                    top_p=top_p,
+                    top_k=top_k,
+                    tfs=tfs,
+                    numseqs=1,
+                    repetition_penalty=rep_pen,
+                    rpslope=rep_pen_slope,
+                    rprange=rep_pen_range,
+                    soft_embeddings=vars.sp,
+                    soft_tokens=None,
+                )
+                if eos_token_id in genout[0]:
+                    genout[0] = genout[0][:genout[0].index(eos_token_id) + 1]
+                string_result += tokenizer.decode(genout[0])
+        else:
+            genout = tpool.execute(
+                tpu_mtj_backend.infer_static,
+                np.uint32(txt),
+                gen_len=gen_len,
+                temp=temp,
+                top_p=top_p,
+                top_k=top_k,
+                tfs=tfs,
+                numseqs=1,
+                repetition_penalty=rep_pen,
+                rpslope=rep_pen_slope,
+                rprange=rep_pen_range,
+                soft_embeddings=vars.sp,
+                soft_tokens=None,
+            )
+            string_result = tokenizer.decode(genout[0])
     except Exception as exception:
         print("An error occured...")
         print(exception)
@@ -1856,10 +1882,8 @@ def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, 
         else:
             print("{0}{1}{2}".format(colors.RED, traceback.format_exc().replace("\033", ""), colors.END),
                   file=sys.stderr)
-        return
 
-    genout = [{"generated_text": utils.decodenewlines(tokenizer.decode(txt))} for txt in genout]
-    return genout[0]["generated_text"]
+    return string_result
 
 
 @app.route('/download')
