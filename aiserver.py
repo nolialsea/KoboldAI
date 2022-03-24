@@ -1786,7 +1786,7 @@ def api_generate():
             request_json = request.get_json(force=True)
             txt = request_json["input"]
 
-            params = request_json["parameters"]
+            params = request_json["parameters"] if "parameters" in request_json else {}
 
             min_length = params["min_length"] if "min_length" in params else 1
             max_length = params["max_length"] if "max_length" in params else 40
