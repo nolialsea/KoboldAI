@@ -1858,7 +1858,7 @@ def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, 
                 genout = tpool_execute(txt, eos_token_search_batch_size, temp, top_p, top_k, tfs,
                                        rep_pen, rep_pen_slope, rep_pen_range)
                 if eos_token_id in genout[0]:
-                    genout[0] = genout[0][:np.where(genout[0] == eos_token_id)[0] + 1]
+                    genout[0] = genout[0][:int(np.where(genout[0] == eos_token_id)[0]) + 1]
                     string_result += tokenizer.decode(genout[0])
                     break
                 else:
