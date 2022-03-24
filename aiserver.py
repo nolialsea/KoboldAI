@@ -1779,9 +1779,11 @@ def index():
 @app.route('/generate', methods=['POST'])
 def api_generate():
     if request.method == 'POST':
+        while vars.aibusy:
+            time.sleep(0.1)
+        vars.aibusy = True
         try:
             request_json = request.get_json(force=True)
-            print(request_json)
             txt = request_json["input"]
             params = request_json["parameters"]
 
@@ -1795,25 +1797,16 @@ def api_generate():
             top_k = params["top_k"]
             tfs = params["tail_free_sampling"]
 
-            print("Received Data: {0}".format(txt))
-
-            print("Encoding text into tokens...")
             txt_tokens = tokenizer.encode(txt, max_length=int(2e11), truncation=True)
 
-            print("Generating text, please wait...")
             output = api_tpumtjgenerate(txt_tokens, min_length, max_length, temp, top_p, top_k, tfs, rep_pen,
                                         rep_pen_slope, rep_pen_range)
 
-            print("Generation finished!")
             response = app.response_class(
-                response=json.dumps({"data": {"output": output}}),
+                response=json.dumps({"output": output}),
                 status=200,
                 mimetype='application/json'
             )
-
-            print("Response ready to be sent!")
-            return response
-
         except Exception as exception:
             print("[ERROR] Something went wrong during generation!")
             print("{0}".format(exception))
@@ -1824,19 +1817,16 @@ def api_generate():
                 status=400,
                 mimetype='application/json'
             )
-            return response
+
+        vars.aibusy = False
+        return response
 
 
 def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope, rep_pen_range):
-    print("Entered api_tpumtjgenerate...")
     numseqs = 1
-
-    print("{0}Min:{1}, Max:{2}, Txt:{3}{4}".format(colors.YELLOW, minimum, maximum,
-                                                   utils.decodenewlines(tokenizer.decode(txt)), colors.END))
 
     # Submit input text to generator
     try:
-        print("Executing tpool...")
         genout = tpool.execute(
             tpu_mtj_backend.infer_static,
             np.uint32(txt),
@@ -1852,8 +1842,6 @@ def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, 
             soft_embeddings=vars.sp,
             soft_tokens=None,
         )
-        print("tpool excecution successful!")
-
     except Exception as exception:
         print("An error occured...")
         print(exception)
@@ -1868,12 +1856,9 @@ def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, 
         else:
             print("{0}{1}{2}".format(colors.RED, traceback.format_exc().replace("\033", ""), colors.END),
                   file=sys.stderr)
-        vars.aibusy = False
         return
 
     genout = [{"generated_text": utils.decodenewlines(tokenizer.decode(txt))} for txt in genout]
-
-    vars.aibusy = False
     return genout[0]["generated_text"]
 
 
