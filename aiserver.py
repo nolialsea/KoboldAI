@@ -1824,6 +1824,24 @@ def api_generate():
         return response
 
 
+def tpool_execute(txt, gen_len, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope, rep_pen_range):
+    return tpool.execute(
+        tpu_mtj_backend.infer_static,
+        np.uint32(txt),
+        gen_len=gen_len,
+        temp=temp,
+        top_p=top_p,
+        top_k=top_k,
+        tfs=tfs,
+        numseqs=1,
+        repetition_penalty=rep_pen,
+        rpslope=rep_pen_slope,
+        rprange=rep_pen_range,
+        soft_embeddings=vars.sp,
+        soft_tokens=None,
+    )
+
+
 def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope, rep_pen_range,
                        eos_token_id=None, eos_token_search_batch_size=20):
     string_result = None
@@ -1833,24 +1851,13 @@ def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, 
         if eos_token_id is not None:
             string_result = ''
             for _ in range(int(gen_len // eos_token_search_batch_size)):
-                genout = tpool.execute(
-                    tpu_mtj_backend.infer_static,
-                    np.uint32(txt),
-                    gen_len=gen_len,
-                    temp=temp,
-                    top_p=top_p,
-                    top_k=top_k,
-                    tfs=tfs,
-                    numseqs=1,
-                    repetition_penalty=rep_pen,
-                    rpslope=rep_pen_slope,
-                    rprange=rep_pen_range,
-                    soft_embeddings=vars.sp,
-                    soft_tokens=None,
-                )
+                genout = tpool_execute(txt+string_result, eos_token_search_batch_size, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope, rep_pen_range)
                 if eos_token_id in genout[0]:
                     genout[0] = genout[0][:genout[0].index(eos_token_id) + 1]
-                string_result += tokenizer.decode(genout[0])
+                    string_result += tokenizer.decode(genout[0])
+                    break
+                else:
+                    string_result += tokenizer.decode(genout[0])
         else:
             genout = tpool.execute(
                 tpu_mtj_backend.infer_static,
