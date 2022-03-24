@@ -1798,7 +1798,8 @@ def api_generate():
             print("Received Data: {0}".format(txt))
             print("Generating text, please wait...")
 
-            output = api_tpumtjgenerate(txt, min_length, max_length, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope, rep_pen_range)
+            output = api_tpumtjgenerate(txt, min_length, max_length, temp, top_p, top_k, tfs, rep_pen, rep_pen_slope,
+                                        rep_pen_range)
 
             response = app.response_class(
                 response=json.dumps({"data": {"output": output}}),
