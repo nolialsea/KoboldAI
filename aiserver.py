@@ -1799,7 +1799,7 @@ def api_generate():
             tfs = params["tail_free_sampling"] if "tail_free_sampling" in params else 1
             eos_token_id = params["eos_token_id"] if "eos_token_id" in params else None
             eos_token_search_batch_size = params[
-                "eos_token_search_batch_size"] if "eos_token_search_batch_size" in params else None
+                "eos_token_search_batch_size"] if "eos_token_search_batch_size" in params else 20
 
             # TODO: set max_length to the proper value
             txt_tokens = tokenizer.encode(txt, max_length=int(2e11) - (max_length - min_length + 1), truncation=True)
