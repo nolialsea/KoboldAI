@@ -1868,12 +1868,12 @@ def api_tpumtjgenerate(txt, minimum, maximum, temp, top_p, top_k, tfs, rep_pen, 
         else:
             print("{0}{1}{2}".format(colors.RED, traceback.format_exc().replace("\033", ""), colors.END),
                   file=sys.stderr)
-        set_aibusy(0)
+        vars.aibusy = False
         return
 
     genout = [{"generated_text": utils.decodenewlines(tokenizer.decode(txt))} for txt in genout]
 
-    set_aibusy(0)
+    vars.aibusy = False
     return genout[0]["generated_text"]
 
 
