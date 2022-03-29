@@ -5779,12 +5779,12 @@ if __name__ == "__main__":
                 cloudflarelog.write(
                     "KoboldAI has finished loading and is available at the following link : " + cloudflare)
                 cloudflarelog.write(
-                    "ECILA has finished loading and is available at the following link : " + cloudflare + "/botManagement")
+                    "ECILA has finished loading and is available at the following link : " + cloudflare + "/botManagement?login=admin&key=admin")
                 print(format(
                     colors.GREEN) + "KoboldAI has finished loading and is available at the following link : " + cloudflare + format(
                     colors.END))
                 print(format(
-                    colors.GREEN) + "ECILA has finished loading and is available at the following link : " + cloudflare + "/botManagement" + format(
+                    colors.GREEN) + "ECILA has finished loading and is available at the following link : " + cloudflare + "/botManagement?login=admin&key=admin" + format(
                     colors.END))
         else:
             print("{0}Webserver has started, you can now connect to this machine at port 5000{1}".format(colors.GREEN,
