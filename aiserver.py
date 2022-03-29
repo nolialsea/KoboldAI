@@ -1776,9 +1776,10 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/api/v1')
+@app.route('/api/v1/<action1>')
+@app.route('/api/v1/<action1>/<action2>')
 @app.route('/botManagement')
-def _proxy(*args, **kwargs):
+def _proxy(action1, action2):
     resp = requests.request(
         method=request.method,
         url=request.url.replace(request.host_url, 'http://localhost:7319/'),
