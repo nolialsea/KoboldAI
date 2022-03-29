@@ -1782,7 +1782,7 @@ def index():
 def _proxy(*args, **kwargs):
     resp = requests.request(
         method=request.method,
-        url=request.url.replace(request.host_url, 'http://localhost:7319/'),
+        url=re.sub('(http[s]?:\/\/[^\/\s]+\/)', 'http://localhost:7319/', request.url),
         headers={key: value for (key, value) in request.headers if key != 'Host'},
         data=request.get_data(),
         cookies=request.cookies,
