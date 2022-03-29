@@ -5755,12 +5755,18 @@ if __name__ == "__main__":
             from flask_cloudflared import _run_cloudflared
 
             cloudflare = _run_cloudflared(5000)
+            cloudflare_ecila = _run_cloudflared(7319)
         if (args.ngrok or args.remote):
             with open('cloudflare.log', 'w') as cloudflarelog:
                 cloudflarelog.write(
                     "KoboldAI has finished loading and is available at the following link : " + cloudflare)
+                cloudflarelog.write(
+                    "ECILA has finished loading and is available at the following link : " + cloudflare_ecila)
                 print(format(
                     colors.GREEN) + "KoboldAI has finished loading and is available at the following link : " + cloudflare + format(
+                    colors.END))
+                print(format(
+                    colors.GREEN) + "ECILA has finished loading and is available at the following link : " + cloudflare_ecila + format(
                     colors.END))
         else:
             print("{0}Webserver has started, you can now connect to this machine at port 5000{1}".format(colors.GREEN,
