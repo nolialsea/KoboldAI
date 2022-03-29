@@ -1776,13 +1776,12 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/api/v1/<action1>')
-@app.route('/api/v1/<action1>/<action2>')
+@app.route('/api/v1/<path:subpath>')
 @app.route('/botManagement')
 def _proxy(*args, **kwargs):
     resp = requests.request(
         method=request.method,
-        url=re.sub('(http[s]?:\/\/[^\/\s]+\/)', 'http://localhost:7319/', request.url),
+        url=re.sub('(http[s]?:\/\/[^\/\s]+)', 'http://localhost:7319', request.url),
         headers={key: value for (key, value) in request.headers if key != 'Host'},
         data=request.get_data(),
         cookies=request.cookies,
