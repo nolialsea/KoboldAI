@@ -1776,8 +1776,8 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/api/v1/<path:subpath>')
-@app.route('/botManagement')
+@app.route('/api/v1/<path:subpath>', methods=['GET', 'POST'])
+@app.route('/botManagement', methods=['GET'])
 def _proxy(*args, **kwargs):
     resp = requests.request(
         method=request.method,
